@@ -3,10 +3,8 @@ import requests
 
 app = Flask(__name__)
 
-# URL da API de estoque (pode ser alterada conforme o ambiente)
 API_ESTOQUE_URL = 'http://localhost:5000'
 
-# Rota para listar produtos (chama a API de estoque)
 @app.route('/produtos', methods=['GET'])
 def listar_produtos():
     try:
