@@ -8,6 +8,9 @@ app = Flask(__name__)
 API_ESTOQUE_URL = 'http://localhost:5000'
 API_DESCONTOS_URL = 'http://localhost:3000'
 
+CACHE_KEY = "produtos_cache"
+CACHE_TIMEOUT = 60  # segundos
+
 client = redis.Redis(host='localhost', port=6379, decode_responses=True)
   
 @app.route('/produtos', methods=['GET'])
@@ -17,16 +20,18 @@ def listar_produtos():
         data = client.get(cache_key)
 
         if data:
+            cached = True
             produtos = json.loads(data)
             # print("[CACHE] Lista de produtos recuperada do Redis")
         else:
+            cached = False
             resposta = requests.get(f'{API_ESTOQUE_URL}/produtos')
             produtos = resposta.json()
             client.set(cache_key, json.dumps(produtos), ex=60)
             print("[API] Lista de produtos recuperada da API e armazenada no Redis")
 
         return jsonify({ 
-            "from_cache": True,
+            "from_cache": cached,
             "produtos": produtos      
             }), 200
     except requests.exceptions.RequestException:
