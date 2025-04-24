@@ -18,18 +18,21 @@ def listar_produtos():
 
         if data:
             produtos = json.loads(data)
-            print("[CACHE] Lista de produtos recuperada do Redis")
+            # print("[CACHE] Lista de produtos recuperada do Redis")
         else:
             resposta = requests.get(f'{API_ESTOQUE_URL}/produtos')
             produtos = resposta.json()
             client.set(cache_key, json.dumps(produtos), ex=60)
             print("[API] Lista de produtos recuperada da API e armazenada no Redis")
 
-        return jsonify(produtos), 200
+        return jsonify({ 
+            "from_cache": True,
+            "produtos": produtos      
+            }), 200
     except requests.exceptions.RequestException:
         return jsonify({'mensagem': 'Erro ao conectar com a API de estoque.'}), 500
     
-@app.route('/descontos', methods=['GET'])
+@app.route('/desconto', methods=['GET'])
 def listar_descontos():
     try:
         cache_key = "descontos:lista"
@@ -39,12 +42,15 @@ def listar_descontos():
             descontos = json.loads(data)
             print("[CACHE] Lista de descontos recuperadas do Redis")
         else:
-            resposta = requests.get(f'{API_DESCONTOS_URL}/produtos-descontos')
+            resposta = requests.get(f'{API_DESCONTOS_URL}/produtos-desconto')
             descontos = resposta.json()
             client.set(cache_key, json.dumps(descontos), ex=60)
             print("[API] Lista de descontos recuperada da API descontos e armazenada no Redis")
 
-        return jsonify(descontos), 200
+        return jsonify({
+            "from_cache": True,
+            "produtos": descontos  
+            }), 200
     except requests.exceptions.RequestException:
         return jsonify({'mensagem': 'Erro ao conectar com a API de descontos.'}), 500
    
